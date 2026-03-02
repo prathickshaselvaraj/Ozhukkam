@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Domain {
+  HEALTH
+  CAREER
+  DISCIPLINE
+  COMMUNICATION
+  LIFE
+}
+
+enum MetricType {
+  BOOLEAN
+  NUMBER
+  DURATION
+  TIME
+  SCALE
+  TEXT
+}
+
+enum JournalType {
+  DIARY
+  JOURNAL
+  BLOG
+}
+
+model MetricTemplate {
+  id        String    @id @default(uuid())
+  key       String    @unique
+  name      String
+  domain    Domain
+  type      MetricType
+  unit      String?
+  target    Float?
+  direction String?
+  weight    Float     @default(1)
+  required  Boolean   @default(false)
+  active    Boolean   @default(true)
+  icon      String?
+  quickLink String?
+  colorTag  String?
+  config    Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  values    DailyMetricValue[]
+
+  @@index([domain])
+  @@index([active])
+}
+
+model DailyLog {
+  id                String   @id @default(uuid())
+  date              DateTime @unique
+  score             Float?
+  completionPercent Float?
+  domainScores      Json?
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  metrics           DailyMetricValue[]
+
+  @@index([date])
+}
+
+model DailyMetricValue {
+  id          String   @id @default(uuid())
+  dailyLogId  String
+  metricId    String
+  valueNumber Float?
+  valueBool   Boolean?
+  valueText   String?
+  valueTime   DateTime?
+  valueJson   Json?
+  dailyLog    DailyLog        @relation(fields: [dailyLogId], references: [id], onDelete: Cascade)
+  metric      MetricTemplate  @relation(fields: [metricId], references: [id], onDelete: Cascade)
+
+  @@unique([dailyLogId, metricId])
+  @@index([metricId])
+}
+
+model JournalEntry {
+  id        String      @id @default(uuid())
+  date      DateTime?
+  title     String
+  content   String
+  type      JournalType @default(JOURNAL)
+  tags      String[]    @default([])
+  mood      Int?
+  isPublic  Boolean     @default(false)
+  slug      String?     @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([type])
+  @@index([date])
+}
+
+model QuickLink {
+  id        String   @id @default(uuid())
+  name      String
+  url       String
+  icon      String?
+  category  String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
