@@ -13,6 +13,10 @@ app.get("/health", (req, res) => {
   res.json({ ok: true });
 });
 
+app.get("/", (req, res) => {
+  res.send("Ozhukkam API is running");
+});
+
 app.use("/api", routes);
 
 app.use(notFound);
