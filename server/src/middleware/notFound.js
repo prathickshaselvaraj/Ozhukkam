@@ -1,4 +1,3 @@
-export function notFound(req, res, next) {
-  res.status(404);
-  next(new Error("Not found: " + req.method + " " + req.originalUrl));
+export default function notFound(req, res) {
+  res.status(404).json({ error: "Not found" });
 }
