@@ -1,0 +1,31 @@
+---
+# ─── Server Service ───────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: ozhukkam-server-svc
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    app: ozhukkam-server
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+
+---
+# ─── Client Service ───────────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: ozhukkam-client-svc
+  namespace: default
+spec:
+  type: LoadBalancer
+  selector:
+    app: ozhukkam-client
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
