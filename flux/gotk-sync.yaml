@@ -7,7 +7,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m           # Check GitHub every 1 minute
-  url: https://github.com/<YOUR_GITHUB_USERNAME>/Ozhukkam
+  url: https://github.com/prathickshaselvaraj/Ozhukkam
   ref:
     branch: main
   secretRef:
