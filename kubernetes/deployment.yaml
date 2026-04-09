@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: <YOUR_DOCKERHUB_USERNAME>/ozhukkam-server:latest
+          image: prathicksha15/ozhukkam-server:latest
           ports:
             - containerPort: 5000
           env:
@@ -76,7 +76,7 @@ spec:
     spec:
       containers:
         - name: client
-          image: <YOUR_DOCKERHUB_USERNAME>/ozhukkam-client:latest
+          image: prathicksha15/ozhukkam-client:latest
           ports:
             - containerPort: 80
           resources:
