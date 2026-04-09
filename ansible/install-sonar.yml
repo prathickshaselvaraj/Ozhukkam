@@ -1,0 +1,91 @@
+---
+- name: Install SonarQube on EC2
+  hosts: jenkins_server
+  become: true
+
+  vars:
+    sonar_version: "10.4.1.88267"
+    sonar_dir: "/opt/sonarqube"
+    sonar_user: "sonar"
+
+  tasks:
+
+    - name: Install Java 17 (required for SonarQube)
+      apt:
+        name: openjdk-17-jdk
+        state: present
+        update_cache: yes
+
+    - name: Create sonar user
+      user:
+        name: "{{ sonar_user }}"
+        shell: /bin/bash
+        create_home: yes
+
+    - name: Set vm.max_map_count (required by SonarQube/Elasticsearch)
+      sysctl:
+        name: vm.max_map_count
+        value: "262144"
+        state: present
+        reload: yes
+
+    - name: Download SonarQube
+      get_url:
+        url: "https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-{{ sonar_version }}.zip"
+        dest: /tmp/sonarqube.zip
+
+    - name: Unzip SonarQube
+      unarchive:
+        src: /tmp/sonarqube.zip
+        dest: /opt/
+        remote_src: yes
+
+    - name: Rename SonarQube directory
+      command: mv /opt/sonarqube-{{ sonar_version }} {{ sonar_dir }}
+      args:
+        creates: "{{ sonar_dir }}"
+
+    - name: Set ownership of SonarQube directory
+      file:
+        path: "{{ sonar_dir }}"
+        owner: "{{ sonar_user }}"
+        group: "{{ sonar_user }}"
+        recurse: yes
+
+    - name: Create SonarQube systemd service
+      copy:
+        dest: /etc/systemd/system/sonarqube.service
+        content: |
+          [Unit]
+          Description=SonarQube service
+          After=network.target
+
+          [Service]
+          Type=forking
+          ExecStart={{ sonar_dir }}/bin/linux-x86-64/sonar.sh start
+          ExecStop={{ sonar_dir }}/bin/linux-x86-64/sonar.sh stop
+          User={{ sonar_user }}
+          Group={{ sonar_user }}
+          Restart=always
+          LimitNOFILE=65536
+          LimitNPROC=4096
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Start and enable SonarQube
+      systemd:
+        name: sonarqube
+        state: started
+        enabled: yes
+        daemon_reload: yes
+
+    - name: Wait for SonarQube to be ready
+      wait_for:
+        port: 9000
+        delay: 30
+        timeout: 120
+
+    - name: SonarQube is ready
+      debug:
+        msg: "SonarQube is running at http://{{ ansible_host }}:9000 — default login: admin / admin"
