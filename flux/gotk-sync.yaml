@@ -1,0 +1,38 @@
+---
+# ─── GitRepository: tells FluxCD where the source of truth is ────────
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: ozhukkam-repo
+  namespace: flux-system
+spec:
+  interval: 1m           # Check GitHub every 1 minute
+  url: https://github.com/<YOUR_GITHUB_USERNAME>/Ozhukkam
+  ref:
+    branch: main
+  secretRef:
+    name: flux-github-token   # kubectl create secret generic flux-github-token
+
+---
+# ─── Kustomization: tells FluxCD which folder to apply ───────────────
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ozhukkam-app
+  namespace: flux-system
+spec:
+  interval: 1m
+  path: "./kubernetes"       # Points to the kubernetes/ folder in repo
+  prune: true                # Remove resources deleted from Git
+  sourceRef:
+    kind: GitRepository
+    name: ozhukkam-repo
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: ozhukkam-server
+      namespace: default
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: ozhukkam-client
+      namespace: default
