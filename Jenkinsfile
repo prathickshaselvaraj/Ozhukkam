@@ -81,16 +81,12 @@ pipeline {
         }
 
         stage('SonarQube Analysis') {
-            steps {
-                withSonarQubeEnv('My Sonar Server') {
-                    sh '''
-                        sonar-scanner \
-                          -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-                          -Dsonar.sources=server/src,client/src
-                    '''
-                }
-            }
+    steps {
+        withSonarQubeEnv('My Sonar Server') {
+            sh 'sonar-scanner -Dsonar.projectKey=ozhukkam -Dsonar.sources=server/src,client/src -Dsonar.tests='
         }
+    }
+}
 
         stage('Quality Gate — Strict_Production_Gate') {
             steps {
