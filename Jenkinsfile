@@ -29,14 +29,14 @@ pipeline {
                 stage('Server deps') {
                     steps {
                         dir('server') {
-                            sh 'npm ci'
+                            sh 'npm install'
                         }
                     }
                 }
                 stage('Client deps') {
                     steps {
                         dir('client') {
-                            sh 'npm ci'
+                            sh 'npm install'
                         }
                     }
                 }
