@@ -18,33 +18,69 @@ pipeline {
 
         stage('Install Dependencies') {
             parallel {
-                stage('Server') { steps { dir('server') { sh 'npm install' } } }
-                stage('Client') { steps { dir('client') { sh 'npm install' } } }
+                stage('Server deps') {
+                    steps {
+                        dir('server') {
+                            sh 'npm install'
+                        }
+                    }
+                }
+                stage('Client deps') {
+                    steps {
+                        dir('client') {
+                            sh 'npm install'
+                        }
+                    }
+                }
             }
         }
 
         stage('Lint') {
             parallel {
-                stage('Server') { steps { dir('server') { sh 'npm run lint' } } }
-                stage('Client') { steps { dir('client') { sh 'npm run lint' } } }
+                stage('Lint Server') {
+                    steps {
+                        dir('server') {
+                            sh 'npm run lint'
+                        }
+                    }
+                }
+                stage('Lint Client') {
+                    steps {
+                        dir('client') {
+                            sh 'npm run lint'
+                        }
+                    }
+                }
             }
         }
 
         stage('Unit Tests') {
             parallel {
-                stage('Server') { steps { dir('server') { sh 'npm test' } } }
-                stage('Client') { steps { dir('client') { sh 'npm test' } } }
+                stage('Test Server') {
+                    steps {
+                        dir('server') {
+                            sh 'npm test'
+                        }
+                    }
+                }
+                stage('Test Client') {
+                    steps {
+                        dir('client') {
+                            sh 'npm test'
+                        }
+                    }
+                }
             }
         }
 
         stage('Docker Build') {
             parallel {
-                stage('Server Image') {
+                stage('Build Server Image') {
                     steps {
                         sh "docker build -f Dockerfile.server -t ${IMAGE_SERVER}:${IMAGE_TAG} -t ${IMAGE_SERVER}:latest ."
                     }
                 }
-                stage('Client Image') {
+                stage('Build Client Image') {
                     steps {
                         sh "docker build -f Dockerfile.client -t ${IMAGE_CLIENT}:${IMAGE_TAG} -t ${IMAGE_CLIENT}:latest ."
                     }
@@ -64,12 +100,15 @@ pipeline {
     }
 
     post {
-        always { 
+        always {
             sh 'docker logout'
             cleanWs()
         }
-        success { 
-            echo "✅ PIPELINE SUCCESS!"
+        success {
+            echo "✅ PIPELINE SUCCESS! Images pushed to Docker Hub"
+        }
+        failure {
+            echo "❌ PIPELINE FAILED!"
         }
     }
 }
